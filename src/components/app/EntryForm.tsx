@@ -139,8 +139,9 @@ function Line({
   label: string;
   value: string;
   strong?: boolean;
-  tone?: "success" | "destructive";
+  tone?: "success" | "destructive" | undefined;
 }) {
+
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{label}</span>
