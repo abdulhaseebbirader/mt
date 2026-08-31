@@ -1,24 +1,231 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Settings2 } from "lucide-react";
+import { useMemo, useState } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import { ColumnSettings } from "@/components/app/ColumnSettings";
+import { EntryForm } from "@/components/app/EntryForm";
+import { HistoryTable } from "@/components/app/HistoryTable";
+import { SummaryCards } from "@/components/app/SummaryCards";
+import { TopNav } from "@/components/app/TopNav";
+import {
+  BRANCHES,
+  SALES_INPUTS,
+  TABS,
+  cycleFor,
+  inCycle,
+  isArchived,
+  parseRows,
+  shiftCycle,
+  type BranchId,
+  type ModuleId,
+} from "@/lib/domain";
+import {
+  useOnlineStatus,
+  usePendingCount,
+  useQueueSync,
+  useSaveEntry,
+  useSheetTab,
+} from "@/lib/useSheetData";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Reconcile Hub — Restaurant Sales & Inventory" },
+      {
+        name: "description",
+        content:
+          "Log daily sales reconciliation and raw material procurement for both restaurant branches straight into Google Sheets, even offline.",
+      },
+      { property: "og:title", content: "Reconcile Hub — Restaurant Sales & Inventory" },
+      {
+        property: "og:description",
+        content:
+          "Multi-branch daily closing and procurement register that syncs directly to Google Sheets.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Hub,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Hub() {
+  const [branch, setBranch] = useState<BranchId>("azad");
+  const [module, setModule] = useState<ModuleId>("sales");
+  const [cycleOffset, setCycleOffset] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [dateOverride, setDateOverride] = useState<string | null>(null);
+
+  const online = useOnlineStatus();
+  const pending = usePendingCount();
+  useQueueSync();
+
+  const salesTab = TABS[branch]["sales"];
+  const invTab = TABS[branch]["inventory"];
+  const activeTab = module === "sales" ? salesTab : invTab;
+
+  const sales = useSheetTab(salesTab);
+  const inventory = useSheetTab(invTab);
+  const active = module === "sales" ? sales : inventory;
+  const save = useSaveEntry(activeTab);
+
+  const cycle = useMemo(() => shiftCycle(cycleFor(new Date()), cycleOffset), [cycleOffset]);
+
+  const salesRows = useMemo(() => (sales.data ? parseRows(sales.data) : []), [sales.data]);
+  const invRows = useMemo(() => (inventory.data ? parseRows(inventory.data) : []), [inventory.data]);
+
+  const salesCycleRows = salesRows.filter((r) => inCycle(r.date, cycle));
+  const invCycleRows = invRows.filter((r) => inCycle(r.date, cycle));
+
+  const revenue = salesCycleRows.reduce((s, r) => s + (r.values["TOTAL"] ?? 0), 0);
+  const procurement = invCycleRows.reduce((s, r) => s + (r.values["TOTAL"] ?? 0), 0);
+  const access = salesCycleRows.reduce((s, r) => s + (r.values["ACCESS"] ?? 0), 0);
+  const shot = salesCycleRows.reduce((s, r) => s + (r.values["SHOT"] ?? 0), 0);
+  const pendingAmt = salesCycleRows.reduce((s, r) => s + (r.values["PENDING"] ?? 0), 0);
+
+  const inventoryFields = useMemo(
+    () =>
+      (inventory.data?.headers ?? [])
+        .slice(1)
+        .filter((h) => h && h !== "TOTAL" && !isArchived(h)),
+    [inventory.data],
+  );
+
+  const fields = module === "sales" ? [...SALES_INPUTS] : inventoryFields;
+  const rows = module === "sales" ? salesCycleRows : invCycleRows;
+
+  const lookup = (dateText: string) => {
+    const all = module === "sales" ? salesRows : invRows;
+    return all.find((r) => r.dateText === dateText)?.values ?? null;
+  };
+
+  const historyColumns =
+    module === "sales"
+      ? ["CASH", "ONLINE", "ACCESS", "SHOT", "PENDING", "C. EXPENSE"]
+      : inventoryFields;
+
+  const refreshing = sales.isFetching || inventory.isFetching;
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <div className="min-h-screen bg-background pb-24">
+      <TopNav
+        branch={branch}
+        module={module}
+        online={online}
+        pending={pending}
+        refreshing={refreshing}
+        onBranch={setBranch}
+        onModule={setModule}
+        onRefresh={() => {
+          void sales.refetch();
+          void inventory.refetch();
+        }}
       />
+
+      <main className="mx-auto max-w-3xl space-y-6 px-4 pt-5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex gap-2">
+            <CycleButton onClick={() => setCycleOffset((o) => o - 1)} label="‹ Prev" />
+            {cycleOffset !== 0 && (
+              <CycleButton onClick={() => setCycleOffset(0)} label="Current" />
+            )}
+            <CycleButton
+              onClick={() => setCycleOffset((o) => Math.min(0, o + 1))}
+              label="Next ›"
+              disabled={cycleOffset >= 0}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {BRANCHES.find((b) => b.id === branch)?.name}
+          </p>
+        </div>
+
+        <SummaryCards
+          cycle={cycle}
+          revenue={revenue}
+          procurement={procurement}
+          access={access}
+          shot={shot}
+          pending={pendingAmt}
+        />
+
+        {active.usingCache && (
+          <p className="rounded-xl bg-warning/15 px-3 py-2 text-xs text-warning-foreground">
+            Showing the last saved copy of this sheet. It will refresh once you're back online.
+          </p>
+        )}
+
+        {module === "inventory" && (
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border py-3 text-sm font-semibold text-muted-foreground"
+          >
+            <Settings2 className="h-4 w-4" />
+            Manage procurement categories
+          </button>
+        )}
+
+        {active.isLoading && !active.data ? (
+          <p className="card-surface p-6 text-center text-sm text-muted-foreground">
+            Loading sheet…
+          </p>
+        ) : (
+          <>
+            <EntryForm
+              key={`${activeTab}-form`}
+              module={module}
+              fields={fields}
+              lookup={lookup}
+              saving={save.isPending}
+              dateOverride={dateOverride}
+              onSave={(dateText, values) => {
+                setDateOverride(null);
+                save.mutate({ dateText, values });
+              }}
+            />
+
+            <HistoryTable
+              rows={rows}
+              columns={historyColumns}
+              highlight="TOTAL"
+              onEdit={(iso) => {
+                setDateOverride(iso);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          </>
+        )}
+      </main>
+
+      {settingsOpen && inventory.data && (
+        <ColumnSettings
+          tab={invTab}
+          headers={inventory.data.headers}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
     </div>
+  );
+}
+
+function CycleButton({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40"
+    >
+      {label}
+    </button>
   );
 }
