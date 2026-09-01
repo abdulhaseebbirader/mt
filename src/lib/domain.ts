@@ -98,10 +98,20 @@ export function toISODate(d: Date): string {
 }
 
 export function fromDDMMYY(s: string): Date | null {
-  const m = /^(\d{2})\/(\d{2})\/(\d{2})$/.exec(s.trim());
-  if (!m) return null;
-  const [, dd, mm, yy] = m;
-  return new Date(2000 + Number(yy), Number(mm) - 1, Number(dd));
+  const t = s.trim();
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/.exec(t);
+  if (m) {
+    const [, dd, mm, yy] = m;
+    const year = yy!.length === 2 ? 2000 + Number(yy) : Number(yy);
+    return new Date(year, Number(mm) - 1, Number(dd));
+  }
+  // Fallback: Google Sheets may return a date serial number.
+  if (/^\d{5}(\.\d+)?$/.test(t)) {
+    const ms = Math.round((Number(t) - 25569) * 86400 * 1000);
+    const d = new Date(ms);
+    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  }
+  return null;
 }
 
 export function fromISODate(s: string): Date {
