@@ -1,7 +1,17 @@
 // Server-only Google Sheets access through the Lovable connector gateway.
 // Credentials never reach the browser.
+//
+// Each branch has its OWN spreadsheet with two tabs: SALES and INVENTORY.
+// App-level tab keys (AZAD_SALES, ...) resolve to a spreadsheet + tab name.
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_sheets/v4";
+
+const TAB_TARGETS: Record<string, { idEnv: string; tab: string }> = {
+  AZAD_SALES: { idEnv: "AZAD_SPREADSHEET_ID", tab: "SALES" },
+  AZAD_INVENTORY: { idEnv: "AZAD_SPREADSHEET_ID", tab: "INVENTORY" },
+  ROSHAN_SALES: { idEnv: "ROSHAN_SPREADSHEET_ID", tab: "SALES" },
+  ROSHAN_INVENTORY: { idEnv: "ROSHAN_SPREADSHEET_ID", tab: "INVENTORY" },
+};
 
 function env(name: string): string {
   const v = process.env[name];
@@ -9,8 +19,10 @@ function env(name: string): string {
   return v;
 }
 
-export function spreadsheetId() {
-  return env("GOOGLE_SHEETS_SPREADSHEET_ID");
+function resolveTab(tabKey: string): { spreadsheetId: string; tab: string } {
+  const target = TAB_TARGETS[tabKey];
+  if (!target) throw new Error(`Unknown sheet tab: ${tabKey}`);
+  return { spreadsheetId: env(target.idEnv), tab: target.tab };
 }
 
 async function gateway<T>(path: string, init?: RequestInit): Promise<T> {
@@ -42,39 +54,44 @@ export function colLetter(index0: number): string {
   return s;
 }
 
-export async function getValues(tab: string, range = "A1:BZ2000"): Promise<string[][]> {
+export async function getValues(tabKey: string, range = "A1:BZ2000"): Promise<string[][]> {
+  const { spreadsheetId, tab } = resolveTab(tabKey);
   const data = await gateway<{ values?: string[][] }>(
-    `/spreadsheets/${spreadsheetId()}/values/${tab}!${range}?valueRenderOption=UNFORMATTED_VALUE`,
+    `/spreadsheets/${spreadsheetId}/values/${tab}!${range}?valueRenderOption=FORMATTED_VALUE`,
   );
   return (data.values ?? []).map((r) => r.map((c) => (c === null ? "" : String(c))));
 }
 
-export async function updateRange(tab: string, a1: string, values: (string | number)[][]) {
+export async function updateRange(tabKey: string, a1: string, values: (string | number)[][]) {
+  const { spreadsheetId, tab } = resolveTab(tabKey);
   return gateway(
-    `/spreadsheets/${spreadsheetId()}/values/${tab}!${a1}?valueInputOption=USER_ENTERED`,
+    `/spreadsheets/${spreadsheetId}/values/${tab}!${a1}?valueInputOption=USER_ENTERED`,
     { method: "PUT", body: JSON.stringify({ values }) },
   );
 }
 
-export async function appendRow(tab: string, values: (string | number)[]) {
+export async function appendRow(tabKey: string, values: (string | number)[]) {
+  const { spreadsheetId, tab } = resolveTab(tabKey);
   return gateway(
-    `/spreadsheets/${spreadsheetId()}/values/${tab}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+    `/spreadsheets/${spreadsheetId}/values/${tab}!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
     { method: "POST", body: JSON.stringify({ values: [values] }) },
   );
 }
 
-export async function getSheetIdByTitle(title: string): Promise<number> {
+export async function getSheetIdByTitle(tabKey: string): Promise<number> {
+  const { spreadsheetId, tab } = resolveTab(tabKey);
   const meta = await gateway<{
     sheets: { properties: { sheetId: number; title: string } }[];
-  }>(`/spreadsheets/${spreadsheetId()}?fields=sheets.properties`);
-  const found = meta.sheets.find((s) => s.properties.title === title);
-  if (!found) throw new Error(`Sheet tab "${title}" not found`);
+  }>(`/spreadsheets/${spreadsheetId}?fields=sheets.properties`);
+  const found = meta.sheets.find((s) => s.properties.title === tab);
+  if (!found) throw new Error(`Sheet tab "${tab}" not found`);
   return found.properties.sheetId;
 }
 
-export async function insertColumn(tab: string, atIndex0: number) {
-  const sheetId = await getSheetIdByTitle(tab);
-  return gateway(`/spreadsheets/${spreadsheetId()}:batchUpdate`, {
+export async function insertColumn(tabKey: string, atIndex0: number) {
+  const { spreadsheetId } = resolveTab(tabKey);
+  const sheetId = await getSheetIdByTitle(tabKey);
+  return gateway(`/spreadsheets/${spreadsheetId}:batchUpdate`, {
     method: "POST",
     body: JSON.stringify({
       requests: [
