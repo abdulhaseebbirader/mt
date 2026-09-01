@@ -22,12 +22,15 @@ the repository to your GitHub account. (Or push manually.)
 In **Vercel → Project → Settings → Environment Variables**, add everything
 listed in `.env.example` for **Production** and **Preview**:
 
-| Variable                  | Where to get the value                                   |
-| ------------------------- | -------------------------------------------------------- |
-| `LOVABLE_API_KEY`         | Lovable project secret (ask me and I'll print it)        |
-| `GOOGLE_SHEETS_API_KEY`   | Lovable project secret (Google Sheets connector key)     |
-| `AZAD_SPREADSHEET_ID`     | From the Azad Chowk spreadsheet URL                      |
-| `ROSHAN_SPREADSHEET_ID`   | From the Roshan Gate spreadsheet URL                     |
+| Variable                  | Where to get the value                                |
+| ------------------------- | ----------------------------------------------------- |
+| `LOVABLE_API_KEY`         | Ready-made values file (see chat attachment)          |
+| `GOOGLE_SHEETS_API_KEY`   | Ready-made values file (see chat attachment)          |
+| `AZAD_SPREADSHEET_ID`     | Ready-made values file (see chat attachment)          |
+| `ROSHAN_SPREADSHEET_ID`   | Ready-made values file (see chat attachment)          |
+
+All four values are pre-filled in the `env-vars.txt` file shared with you in
+chat — copy them in, then delete that file.
 
 All four are **server-only** — never prefix them with `VITE_`.
 
