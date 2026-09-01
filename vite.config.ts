@@ -12,4 +12,8 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // When building on Vercel (VERCEL=1 is injected by Vercel's CI), pin the
+  // Nitro preset to "vercel" so the build emits a native .vercel/output bundle.
+  // Inside Lovable builds this override is ignored (LOVABLE_NITRO_PRESET wins).
+  nitro: process.env["VERCEL"] ? { preset: "vercel" } : true,
 });
