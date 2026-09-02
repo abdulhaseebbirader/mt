@@ -13,36 +13,115 @@ export const TABS: Record<BranchId, Record<ModuleId, string>> = {
   roshan: { sales: "ROSHAN_SALES", inventory: "ROSHAN_INVENTORY" },
 };
 
-export const SALES_COLUMNS = [
-  "DATE",
-  "PET POOJA",
-  "CASH",
-  "ONLINE",
-  "UPI AFTER 12",
-  "C. EXPENSE",
-  "DISC",
-  "ACCESS",
-  "SHOT",
-  "PENDING",
-  "C. KOT",
-  "TOTAL",
-  "INVENTORY",
-] as const;
+export type SalesSchema = {
+  /** Full column order written to the sheet header row. */
+  columns: string[];
+  /** Columns the user types into. The rest are derived. */
+  inputs: string[];
+  /** Column the collection total is reconciled against. */
+  target: string;
+  /** Columns summed into TOTAL. */
+  totalParts: string[];
+  /** Header used for the positive discrepancy. */
+  accessKey: string;
+  /** Header used for the negative discrepancy. */
+  shortKey: string;
+};
 
-/** Columns the user types into. The rest are derived. */
-export const SALES_INPUTS = [
-  "PET POOJA",
-  "CASH",
-  "ONLINE",
-  "UPI AFTER 12",
-  "C. EXPENSE",
-  "DISC",
-  "PENDING",
-  "C. KOT",
-  "INVENTORY",
-] as const;
+export const AZAD_SALES_SCHEMA: SalesSchema = {
+  columns: [
+    "DATE",
+    "PET POOJA",
+    "CASH",
+    "ONLINE",
+    "UPI AFTER 12",
+    "C. EXPENSE",
+    "DISC",
+    "ACCESS",
+    "SHOT",
+    "PENDING",
+    "C. KOT",
+    "TOTAL",
+    "INVENTORY",
+  ],
+  inputs: [
+    "PET POOJA",
+    "CASH",
+    "ONLINE",
+    "UPI AFTER 12",
+    "C. EXPENSE",
+    "DISC",
+    "PENDING",
+    "C. KOT",
+    "INVENTORY",
+  ],
+  target: "PET POOJA",
+  totalParts: ["CASH", "ONLINE", "UPI AFTER 12", "C. EXPENSE", "DISC"],
+  accessKey: "ACCESS",
+  shortKey: "SHOT",
+};
 
-export const SALES_DERIVED = ["ACCESS", "SHOT", "TOTAL"] as const;
+export const ROSHAN_SALES_SCHEMA: SalesSchema = {
+  columns: [
+    "DATE",
+    "CFR",
+    "CASH",
+    "ONLINE",
+    "AFTER 12",
+    "CE",
+    "DISC",
+    "C KOT",
+    "SHORT",
+    "PENDING",
+    "SWIGGY",
+    "ZOMATO",
+    "ACCESS",
+    "TOTAL",
+  ],
+  inputs: [
+    "CFR",
+    "CASH",
+    "ONLINE",
+    "AFTER 12",
+    "CE",
+    "DISC",
+    "C KOT",
+    "PENDING",
+    "SWIGGY",
+    "ZOMATO",
+  ],
+  target: "CFR",
+  totalParts: ["CASH", "ONLINE", "AFTER 12", "CE", "DISC", "SWIGGY", "ZOMATO"],
+  accessKey: "ACCESS",
+  shortKey: "SHORT",
+};
+
+export const SALES_SCHEMAS: Record<BranchId, SalesSchema> = {
+  azad: AZAD_SALES_SCHEMA,
+  roshan: ROSHAN_SALES_SCHEMA,
+};
+
+/** Picks the schema that matches an existing sheet header row. */
+export function schemaForHeaders(headers: string[]): SalesSchema | null {
+  for (const s of Object.values(SALES_SCHEMAS)) {
+    if (headers.includes(s.target)) return s;
+  }
+  return null;
+}
+
+/** Default procurement categories per branch (used when creating a fresh sheet). */
+export const INVENTORY_COLUMNS: Record<BranchId, string[]> = {
+  azad: [
+    "Mutton", "Chicken", "Kirana", "Saud", "Coal", "Gas", "Staff Wages", "Rent",
+    "Ali D", "Compa", "Water", "Bilal MB's", "Fish", "Dairy", "L Bill", "Veg",
+    "Brista", "Jar", "Egg",
+  ],
+  roshan: [
+    "Mutton", "Chicken", "Kirana", "Saud", "Coal", "Gas", "Staff", "Rent",
+    "Ali D", "Campa", "Water", "Bilal MB's", "Fish", "Dairy", "L Bill", "Veg",
+    "Brista", "Jar", "Deposite", "Tanker",
+  ],
+};
 
 export const ARCHIVE_PREFIX = "ARCHIVED:";
 
@@ -64,15 +143,10 @@ export function money(n: number): string {
   }).format(n);
 }
 
-/** TOTAL = CASH + ONLINE + UPI AFTER 12 + C. EXPENSE + DISC */
-export function reconcile(values: Record<string, number>) {
-  const total =
-    num(values["CASH"]) +
-    num(values["ONLINE"]) +
-    num(values["UPI AFTER 12"]) +
-    num(values["C. EXPENSE"]) +
-    num(values["DISC"]);
-  const discrepancy = total - num(values["PET POOJA"]);
+/** TOTAL = sum of the schema's collection columns; discrepancy vs the target column. */
+export function reconcile(values: Record<string, number>, schema: SalesSchema = AZAD_SALES_SCHEMA) {
+  const total = schema.totalParts.reduce((s, k) => s + num(values[k]), 0);
+  const discrepancy = total - num(values[schema.target]);
   return {
     total,
     discrepancy,
@@ -80,6 +154,7 @@ export function reconcile(values: Record<string, number>) {
     shot: discrepancy < 0 ? Math.abs(discrepancy) : 0,
   };
 }
+
 
 /* ------------------------------- dates ---------------------------------- */
 
