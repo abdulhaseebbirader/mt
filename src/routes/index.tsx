@@ -9,6 +9,7 @@ import { SummaryCards } from "@/components/app/SummaryCards";
 import { TopNav } from "@/components/app/TopNav";
 import {
   BRANCHES,
+  ROSHAN_INVENTORY_ROWS,
   SALES_INPUTS,
   SALES_SCHEMAS,
   TABS,
@@ -16,6 +17,7 @@ import {
   inCycle,
   isArchived,
   parseRows,
+  parseRoshanInventoryRows,
   shiftCycle,
   type BranchId,
   type ModuleId,
@@ -73,7 +75,13 @@ function Hub() {
   const cycle = useMemo(() => shiftCycle(cycleFor(new Date()), cycleOffset), [cycleOffset]);
 
   const salesRows = useMemo(() => (sales.data ? parseRows(sales.data) : []), [sales.data]);
-  const invRows = useMemo(() => (inventory.data ? parseRows(inventory.data) : []), [inventory.data]);
+  const invRows = useMemo(() => {
+    if (!inventory.data) return [];
+    // Use special parsing for Roshan inventory (vertical structure)
+    return branch === "roshan" && module === "inventory"
+      ? parseRoshanInventoryRows(inventory.data)
+      : parseRows(inventory.data);
+  }, [inventory.data, branch, module]);
 
   const salesCycleRows = salesRows.filter((r) => inCycle(r.date, cycle));
   const invCycleRows = invRows.filter((r) => inCycle(r.date, cycle));
@@ -84,13 +92,19 @@ function Hub() {
   const shot = salesCycleRows.reduce((s, r) => s + (r.values["SHOT"] ?? 0), 0);
   const pendingAmt = salesCycleRows.reduce((s, r) => s + (r.values["PENDING"] ?? 0), 0);
 
-  const inventoryFields = useMemo(
-    () =>
-      (inventory.data?.headers ?? [])
-        .slice(1)
-        .filter((h) => h && h !== "TOTAL" && !isArchived(h)),
-    [inventory.data],
-  );
+  const inventoryFields = useMemo(() => {
+    if (!inventory.data) return [];
+    
+    // For Roshan inventory, use the predefined category names from ROSHAN_INVENTORY_ROWS
+    if (branch === "roshan") {
+      return Object.values(ROSHAN_INVENTORY_ROWS);
+    }
+    
+    // For Azad, read from sheet headers (horizontal structure)
+    return (inventory.data?.headers ?? [])
+      .slice(1)
+      .filter((h) => h && h !== "TOTAL" && !isArchived(h));
+  }, [inventory.data, branch]);
 
   const salesSchema = SALES_SCHEMAS[branch];
   const fields = module === "sales" ? salesSchema.inputs : inventoryFields;
