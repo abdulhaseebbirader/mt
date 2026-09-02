@@ -1,13 +1,19 @@
 {
+  "id": "/",
   "name": "Restaurant Reconcile & Inventory Hub",
   "short_name": "Reconcile Hub",
   "description": "Multi-branch daily sales reconciliation and raw material procurement register synced to Google Sheets.",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#faf6ef",
   "theme_color": "#c2551f",
+  "categories": ["business", "finance", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -22,7 +28,7 @@
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
