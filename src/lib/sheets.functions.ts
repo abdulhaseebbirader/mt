@@ -107,6 +107,9 @@ export const saveEntry = createServerFn({ method: "POST" })
     }
 
     if (!lastCellIsTotal && lastDataCycleKey && lastDataCycleKey !== newCycle.key) {
+      // Add empty separator row
+      await appendRow(data.tab, headers.map(() => ""));
+      
       const prevCycleRows = raw
         .slice(1)
         .filter((r) => {
@@ -122,6 +125,9 @@ export const saveEntry = createServerFn({ method: "POST" })
         return prevCycleRows.reduce((s, r) => s + num(r[ci]), 0);
       });
       await appendRow(data.tab, totals);
+      
+      // Add empty separator row
+      await appendRow(data.tab, headers.map(() => ""));
     }
 
     await appendRow(data.tab, rowValues);
