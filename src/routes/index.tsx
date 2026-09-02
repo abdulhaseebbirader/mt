@@ -10,6 +10,7 @@ import { TopNav } from "@/components/app/TopNav";
 import {
   BRANCHES,
   SALES_INPUTS,
+  SALES_SCHEMAS,
   TABS,
   cycleFor,
   inCycle,
@@ -91,7 +92,8 @@ function Hub() {
     [inventory.data],
   );
 
-  const fields = module === "sales" ? [...SALES_INPUTS] : inventoryFields;
+  const salesSchema = SALES_SCHEMAS[branch];
+  const fields = module === "sales" ? salesSchema.inputs : inventoryFields;
   const rows = module === "sales" ? salesCycleRows : invCycleRows;
 
   const lookup = (dateText: string) => {
@@ -179,6 +181,7 @@ function Hub() {
               lookup={lookup}
               saving={save.isPending}
               dateOverride={dateOverride}
+              targetLabel={salesSchema.target}
               onSave={(dateText, values) => {
                 setDateOverride(null);
                 save.mutate({ dateText, values });

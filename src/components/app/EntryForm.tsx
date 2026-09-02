@@ -22,9 +22,11 @@ type Props = {
   onSave: (dateText: string, values: Record<string, number>) => void;
   /** Optional date to jump to (used by inline edit from history). */
   dateOverride?: string | null;
+  /** Target column name for sales reconciliation (PET POOJA or CFR). */
+  targetLabel?: string;
 };
 
-export function EntryForm({ module, fields, lookup, saving, onSave, dateOverride }: Props) {
+export function EntryForm({ module, fields, lookup, saving, onSave, dateOverride, targetLabel }: Props) {
   const [iso, setIso] = useState(() => toISODate(new Date()));
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -102,7 +104,7 @@ export function EntryForm({ module, fields, lookup, saving, onSave, dateOverride
         {module === "sales" ? (
           <div className="mt-4 space-y-2 rounded-xl bg-secondary p-3">
             <Line label="TOTAL collection" value={money(rec.total)} strong />
-            <Line label="PET POOJA target" value={money(num(numeric["PET POOJA"]))} />
+            <Line label={`${targetLabel || "TARGET"} target`} value={money(num(numeric[targetLabel || "PET POOJA"]))} />
             <Line
               label={rec.discrepancy >= 0 ? "ACCESS (excess)" : "SHOT (short)"}
               value={money(rec.discrepancy >= 0 ? rec.access : rec.shot)}
