@@ -56,7 +56,7 @@ function buildRow(headers: string[], dateText: string, values: Record<string, nu
       .reduce((s, h) => s + num(merged[h]), 0);
   }
   return headers.map((h, i) => {
-    if (i === 0) return dateText;
+    if (i === 0) return `'${dateText}`; // Prefix with single quote to force text format in Google Sheets
     const v = merged[h];
     return v === undefined || v === null || v === 0 ? "" : v;
   });
