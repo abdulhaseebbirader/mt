@@ -86,6 +86,7 @@ export const ROSHAN_SALES_SCHEMA: SalesSchema = {
     "CE",
     "DISC",
     "C KOT",
+    "SHORT",
     "PENDING",
     "SWIGGY",
     "ZOMATO",
