@@ -117,7 +117,7 @@ export const INVENTORY_COLUMNS: Record<BranchId, string[]> = {
   azad: [
     "Mutton", "Chicken", "Kirana", "Saud", "Coal", "Gas", "Staff Wages", "Rent",
     "Ali D", "Compa", "Water", "Bilal MB's", "Fish", "Dairy", "L Bill", "Veg",
-    "Brista", "Jar", "Egg",
+    "Brista", "Jar", "Egg", "Khala",
   ],
   roshan: [
     "Mutton", "Chicken", "Kirana", "Saud", "Coal", "Gas", "Staff", "Rent",
