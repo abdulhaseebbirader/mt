@@ -101,6 +101,8 @@ export const SALES_SCHEMAS: Record<BranchId, SalesSchema> = {
   roshan: ROSHAN_SALES_SCHEMA,
 };
 
+export const SALES_INPUTS = AZAD_SALES_SCHEMA.inputs;
+
 /** Picks the schema that matches an existing sheet header row. */
 export function schemaForHeaders(headers: string[]): SalesSchema | null {
   for (const s of Object.values(SALES_SCHEMAS)) {
