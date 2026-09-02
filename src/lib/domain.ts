@@ -126,30 +126,6 @@ export const INVENTORY_COLUMNS: Record<BranchId, string[]> = {
   ],
 };
 
-/** Roshan Gate inventory uses a vertical structure - map row positions to category names */
-export const ROSHAN_INVENTORY_ROWS: Record<number, string> = {
-  4: "Mutton",
-  5: "Chicken",
-  6: "Kirana",
-  7: "Saud",
-  8: "Coal",
-  9: "Gas",
-  10: "Staff",
-  11: "Rent",
-  12: "Ali D",
-  13: "Campa",
-  14: "Water",
-  15: "Bilal MB's",
-  16: "Fish",
-  17: "Dairy",
-  18: "L Bill",
-  19: "Veg",
-  20: "Brista",
-  21: "Jar",
-  22: "Deposite",
-  23: "Tanker",
-};
-
 export const ARCHIVE_PREFIX = "ARCHIVED:";
 
 export function isArchived(header: string) {
@@ -280,57 +256,5 @@ export function parseRows(data: SheetData): ParsedRow[] {
     });
     out.push({ rowNumber: data.rowNumbers[i]!, date, dateText, values });
   });
-  return out;
-}
-
-/**
- * Parse Roshan Gate inventory from vertical structure.
- * Sheet structure:
- *   Row 1: DATE | 30/3/26 | 31/3/26 | ...
- *   Row 4: Mutton | 1710 | (value) | ...
- *   Row 5: Chicken | 20606 | (value) | ...
- */
-export function parseRoshanInventoryRows(data: SheetData): ParsedRow[] {
-  const out: ParsedRow[] = [];
-  
-  // Extract dates from row 1 (columns B onwards)
-  const dateRow = data.rows[0] ?? [];
-  const dates: Array<{ dateText: string; colIndex: number }> = [];
-  
-  for (let ci = 1; ci < dateRow.length; ci++) {
-    const dateText = (dateRow[ci] ?? "").trim();
-    if (dateText) {
-      dates.push({ dateText, colIndex: ci });
-    }
-  }
-  
-  // For each date, create a parsed row with category values
-  for (const { dateText, colIndex } of dates) {
-    const date = fromDDMMYY(dateText);
-    if (!date) continue;
-    
-    const values: Record<string, number> = {};
-    
-    // Read values from each category row (rows 4-23 map to ROSHAN_INVENTORY_ROWS)
-    for (const [rowStr, categoryName] of Object.entries(ROSHAN_INVENTORY_ROWS)) {
-      const rowIndex = parseInt(rowStr) - 1; // Convert 1-based to 0-based
-      const value = num((data.rows[rowIndex]?.[colIndex] ?? "").trim());
-      values[categoryName] = value;
-    }
-    
-    // Calculate TOTAL
-    values["TOTAL"] = Object.entries(ROSHAN_INVENTORY_ROWS).reduce((sum, [rowStr]) => {
-      const rowIndex = parseInt(rowStr) - 1;
-      return sum + num((data.rows[rowIndex]?.[colIndex] ?? "").trim());
-    }, 0);
-    
-    out.push({
-      rowNumber: colIndex + 1, // Use column index as identifier
-      date,
-      dateText,
-      values,
-    });
-  }
-  
   return out;
 }
