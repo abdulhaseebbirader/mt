@@ -83,10 +83,12 @@ function Hub() {
   const salesCycleRows = salesRows.filter((r) => inCycle(r.date, cycle));
   const invCycleRows = invRows.filter((r) => inCycle(r.date, cycle));
 
+  const salesSchema = SALES_SCHEMAS[branch];
+
   const revenue = salesCycleRows.reduce((s, r) => s + (r.values["TOTAL"] ?? 0), 0);
   const procurement = invCycleRows.reduce((s, r) => s + (r.values["TOTAL"] ?? 0), 0);
-  const access = salesCycleRows.reduce((s, r) => s + (r.values["ACCESS"] ?? 0), 0);
-  const shot = salesCycleRows.reduce((s, r) => s + (r.values["SHOT"] ?? 0), 0);
+  const access = salesCycleRows.reduce((s, r) => s + (r.values[salesSchema.accessKey] ?? 0), 0);
+  const shot = salesCycleRows.reduce((s, r) => s + (r.values[salesSchema.shortKey] ?? 0), 0);
   const pendingAmt = salesCycleRows.reduce((s, r) => s + (r.values["PENDING"] ?? 0), 0);
 
   const inventoryFields = useMemo(
@@ -95,7 +97,6 @@ function Hub() {
     [inventory.data],
   );
 
-  const salesSchema = SALES_SCHEMAS[branch];
   const fields = module === "sales" ? salesSchema.inputs : inventoryFields;
   const rows = module === "sales" ? salesCycleRows : invCycleRows;
 
@@ -106,7 +107,19 @@ function Hub() {
 
   const historyColumns =
     module === "sales"
-      ? ["CASH", "ONLINE", "ACCESS", "SHOT", "PENDING", "C. EXPENSE"]
+      ? salesSchema.columns.filter((c) =>
+          new Set([
+            "CASH",
+            "ONLINE",
+            "C. EXPENSE",
+            "CE",
+            "SWIGGY",
+            "ZOMATO",
+            salesSchema.accessKey,
+            salesSchema.shortKey,
+            "PENDING",
+          ]).has(c),
+        )
       : inventoryFields;
 
   const refreshing = sales.isFetching || inventory.isFetching;
@@ -183,6 +196,7 @@ function Hub() {
               saving={save.isPending}
               dateOverride={dateOverride}
               targetLabel={salesSchema.target}
+              salesSchema={salesSchema}
               onSave={(dateText, values) => {
                 setDateOverride(null);
                 save.mutate({ dateText, values });

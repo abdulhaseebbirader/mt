@@ -7,6 +7,7 @@ import {
   isTotalRow,
   num,
   reconcile,
+  schemaForHeaders,
   totalRowLabel,
   ARCHIVE_PREFIX,
   type SheetData,
@@ -31,13 +32,13 @@ export const loadTab = createServerFn({ method: "GET" })
   });
 
 function buildRow(headers: string[], dateText: string, values: Record<string, number>) {
-  const isSales = headers.includes("PET POOJA");
+  const salesSchema = schemaForHeaders(headers);
   const merged = { ...values };
-  if (isSales) {
-    const r = reconcile(merged);
+  if (salesSchema) {
+    const r = reconcile(merged, salesSchema);
     merged["TOTAL"] = r.total;
-    merged["ACCESS"] = r.access;
-    merged["SHOT"] = r.shot;
+    merged[salesSchema.accessKey] = r.access;
+    merged[salesSchema.shortKey] = r.shot;
   } else {
     merged["TOTAL"] = headers
       .slice(1)

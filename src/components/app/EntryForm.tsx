@@ -9,6 +9,8 @@ import {
   toISODate,
   fromISODate,
   type ModuleId,
+  type SalesSchema,
+  AZAD_SALES_SCHEMA,
 } from "@/lib/domain";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +26,8 @@ type Props = {
   dateOverride?: string | null;
   /** Target column name for sales reconciliation (PET POOJA or CFR). */
   targetLabel?: string;
+  /** Branch-specific sales schema for live reconciliation preview. */
+  salesSchema?: SalesSchema;
 };
 
 export function EntryForm({
@@ -34,6 +38,7 @@ export function EntryForm({
   onSave,
   dateOverride,
   targetLabel,
+  salesSchema = AZAD_SALES_SCHEMA,
 }: Props) {
   const [iso, setIso] = useState(() => toISODate(new Date()));
   const [values, setValues] = useState<Record<string, string>>({});
@@ -62,7 +67,7 @@ export function EntryForm({
     return out;
   }, [values, fields]);
 
-  const rec = reconcile(numeric);
+  const rec = reconcile(numeric, salesSchema);
   const invTotal = fields.reduce((s, f) => s + num(values[f]), 0);
 
   return (
@@ -117,7 +122,11 @@ export function EntryForm({
               value={money(num(numeric[targetLabel || "PET POOJA"]))}
             />
             <Line
-              label={rec.discrepancy >= 0 ? "ACCESS (excess)" : "SHOT (short)"}
+              label={
+                rec.discrepancy >= 0
+                  ? `${salesSchema.accessKey} (excess)`
+                  : `${salesSchema.shortKey} (short)`
+              }
               value={money(rec.discrepancy >= 0 ? rec.access : rec.shot)}
               tone={
                 rec.discrepancy === 0 ? undefined : rec.discrepancy > 0 ? "success" : "destructive"
