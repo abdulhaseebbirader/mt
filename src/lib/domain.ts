@@ -115,14 +115,48 @@ export function schemaForHeaders(headers: string[]): SalesSchema | null {
 /** Default procurement categories per branch (used when creating a fresh sheet). */
 export const INVENTORY_COLUMNS: Record<BranchId, string[]> = {
   azad: [
-    "Mutton", "Chicken", "Kirana", "Saud", "Coal", "Gas", "Staff Wages", "Rent",
-    "Ali D", "Compa", "Water", "Bilal MB's", "Fish", "Dairy", "L Bill", "Veg",
-    "Brista", "Jar", "Egg", "Khala",
+    "Mutton",
+    "Chicken",
+    "Kirana",
+    "Saud",
+    "Coal",
+    "Gas",
+    "Staff Wages",
+    "Rent",
+    "Ali D",
+    "Compa",
+    "Water",
+    "Bilal MB's",
+    "Fish",
+    "Dairy",
+    "L Bill",
+    "Veg",
+    "Brista",
+    "Jar",
+    "Egg",
+    "Khala",
   ],
   roshan: [
-    "Mutton", "Chicken", "Kirana", "Saud", "Coal", "Gas", "Staff", "Rent",
-    "Ali D", "Campa", "Water", "Bilal MB's", "Fish", "Dairy", "L Bill", "Veg",
-    "Brista", "Jar", "Deposite", "Tanker",
+    "Mutton",
+    "Chicken",
+    "Kirana",
+    "Saud",
+    "Coal",
+    "Gas",
+    "Staff",
+    "Rent",
+    "Ali D",
+    "Campa",
+    "Water",
+    "Bilal MB's",
+    "Fish",
+    "Dairy",
+    "L Bill",
+    "Veg",
+    "Brista",
+    "Jar",
+    "Deposite",
+    "Tanker",
   ],
 };
 
@@ -157,7 +191,6 @@ export function reconcile(values: Record<string, number>, schema: SalesSchema = 
     shot: discrepancy < 0 ? Math.abs(discrepancy) : 0,
   };
 }
-
 
 /* ------------------------------- dates ---------------------------------- */
 

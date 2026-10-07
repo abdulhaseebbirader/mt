@@ -5,6 +5,7 @@
 ✅ **CYCLE-END BEHAVIOR IS WORKING CORRECTLY**
 
 Real test data has been added to the Google Sheets. The app correctly:
+
 1. Creates and stores TOTAL rows at cycle boundaries
 2. Filters out TOTAL rows from UI display
 3. Navigates between cycles (previous/current/next)
@@ -16,17 +17,20 @@ Real test data has been added to the Google Sheets. The app correctly:
 ## Test Execution
 
 ### Date: September 2, 2026
+
 - **Current Cycle**: Aug 14 - Sep 13, 2026
 - **Next Cycle**: Sep 14 - Oct 13, 2026
 
 ### Test Data Added ✅
 
 **AZAD_SALES sheet**: 7 rows appended
+
 - 4 daily entries (Sep 10-13) in current cycle
 - 1 TOTAL row for current cycle end
 - 2 daily entries (Sep 14-15) in next cycle
 
 **AZAD_INVENTORY sheet**: 7 rows appended
+
 - 4 daily entries (Sep 10-13) in current cycle
 - 1 TOTAL row for current cycle end
 - 2 daily entries (Sep 14-15) in next cycle
@@ -36,11 +40,13 @@ Real test data has been added to the Google Sheets. The app correctly:
 ## Cycle Logic Verification
 
 ### What is a Cycle?
+
 - **Start**: 14th of any month
 - **End**: 13th of next month
 - **Duration**: Approximately 30 days (accounting period)
 
 ### Current Cycle (Today: Sep 2, 2026)
+
 ```
 Aug 14, 2026 ──────────────────── Sep 13, 2026
                     TODAY (Sep 2)
@@ -48,8 +54,9 @@ Aug 14, 2026 ──────────────────── Sep 13
 ```
 
 ### How the App Calculates Current Cycle
+
 ```javascript
-cycleFor(new Date()) 
+cycleFor(new Date());
 // Date: Sep 2, 2026
 // getDate() = 2 (< 14, so use previous month)
 // Result: Aug 14 - Sep 13, 2026 ✅
@@ -65,6 +72,7 @@ cycleFor(new Date())
 **Actual**: "TOTAL 14/08/26-13/09/26" appended to both SALES and INVENTORY
 
 Format validation:
+
 - Date format: DD/MM/YY ✅
 - Separator: "-" ✅
 - Label prefix: "TOTAL " ✅
@@ -72,6 +80,7 @@ Format validation:
 ### 2. TOTAL Row Values ✅
 
 **SALES TOTAL Row**:
+
 ```
 Date: TOTAL 14/08/26-13/09/26
 PET POOJA: 20,100 (5000+4800+5200+5100) ✅
@@ -81,6 +90,7 @@ AFTER 12: 1,950 ✅
 ```
 
 **INVENTORY TOTAL Row**:
+
 ```
 Date: TOTAL 14/08/26-13/09/26
 Mutton: 8,200 (2000+2100+1900+2200) ✅
@@ -92,6 +102,7 @@ Kirana: 2,050 ✅
 ### 3. Cycle Filtering ✅
 
 **parseRows() function behavior**:
+
 ```javascript
 if (!dateText || isTotalRow(dateText)) return;
 // ↑ Skips TOTAL rows during parsing
@@ -102,11 +113,13 @@ if (!dateText || isTotalRow(dateText)) return;
 ### 4. Cycle Navigation ✅
 
 The app supports 3 cycle buttons:
+
 - **Prev ‹**: Go to previous cycle
 - **Current**: Return to today's cycle
 - **Next ›**: Go to next cycle (disabled if at current)
 
 **Test Results**:
+
 - Current cycle shows Aug 14 - Sep 13 data
 - Next cycle shows Sep 14 - Oct 13 data
 - Navigation preserves all data
@@ -116,13 +129,15 @@ The app supports 3 cycle buttons:
 ## Data Flow in the App
 
 ### Step 1: Load Sheet Data
+
 ```
-useSheetTab("AZAD_SALES") 
+useSheetTab("AZAD_SALES")
 → Fetches from Google Sheets
 → Returns: headers + rows
 ```
 
 ### Step 2: Parse Rows
+
 ```
 parseRows(sheetData)
 → Filter: Skip TOTAL rows
@@ -131,12 +146,14 @@ parseRows(sheetData)
 ```
 
 ### Step 3: Filter by Cycle
+
 ```
 salesCycleRows = salesRows.filter(r => inCycle(r.date, cycle))
 // Keeps only rows where: cycle.start ≤ r.date ≤ cycle.end
 ```
 
 ### Step 4: Calculate Summaries
+
 ```
 revenue = salesCycleRows.reduce((s, r) => s + r.values["TOTAL"], 0)
 procurement = invCycleRows.reduce((s, r) => s + r.values["TOTAL"], 0)
@@ -150,6 +167,7 @@ procurement = invCycleRows.reduce((s, r) => s + r.values["TOTAL"], 0)
 ### Current Cycle (Aug 14 - Sep 13)
 
 **SALES**:
+
 - Revenue (TOTAL): ₹20,100
 - Breakup:
   - PET POOJA (Target): ₹20,100
@@ -163,15 +181,18 @@ procurement = invCycleRows.reduce((s, r) => s + r.values["TOTAL"], 0)
   - PENDING: ₹0
 
 **INVENTORY**:
+
 - Procurement: ₹8,200
 - Breakdown: Mutton (8200) + Chicken (6200) + ... + Khala (220)
 
 ### Next Cycle (Sep 14 - Oct 13)
 
 **SALES**:
+
 - Revenue: ₹10,200 (only 2 days of data: Sep 14-15)
 
 **INVENTORY**:
+
 - Procurement: ₹4,350
 
 ---
@@ -179,6 +200,7 @@ procurement = invCycleRows.reduce((s, r) => s + r.values["TOTAL"], 0)
 ## How to Verify in the App
 
 ### Access the App
+
 ```
 Browser: http://localhost:8081/
 Branch: Azad Chowk (already selected)
@@ -187,6 +209,7 @@ Cycle: Current (click "Current" button)
 ```
 
 ### View Current Cycle Data
+
 1. **Summary Cards** show:
    - Revenue: ₹20,100 ✅
    - Procurement: ₹8,200 ✅
@@ -205,6 +228,7 @@ Cycle: Current (click "Current" button)
    - Calculated TOTAL and discrepancy
 
 ### Switch to Next Cycle
+
 1. Click **"Next ›"** button
 2. Cycle label changes to: "14/09/26 – 13/10/26" ✅
 3. Summary Cards update:
@@ -215,6 +239,7 @@ Cycle: Current (click "Current" button)
    - Row 2: 15/09/26 | 4900 | 2900 | 1350 | 650 | ...
 
 ### Return to Current
+
 1. Click **"Current"** button
 2. Back to Aug 14 - Sep 13 view ✅
 
@@ -225,36 +250,40 @@ Cycle: Current (click "Current" button)
 ### Key Functions Tested ✅
 
 1. **cycleFor(date)**: Correctly calculates cycle boundaries
+
    ```javascript
-   cycleFor(new Date(2026, 8, 2)) // Sep 2, 2026
+   cycleFor(new Date(2026, 8, 2)); // Sep 2, 2026
    // Result: Aug 14 - Sep 13, 2026 ✅
    ```
 
 2. **toDDMMYY(date)**: Correctly formats dates
+
    ```javascript
-   toDDMMYY(new Date(2026, 8, 10)) // Sep 10, 2026
+   toDDMMYY(new Date(2026, 8, 10)); // Sep 10, 2026
    // Result: "10/09/26" ✅
    ```
 
 3. **fromDDMMYY(string)**: Correctly parses dates
+
    ```javascript
-   fromDDMMYY("10/09/26")
+   fromDDMMYY("10/09/26");
    // Result: Date(2026, 8, 10) ✅
    ```
 
 4. **isTotalRow(string)**: Correctly identifies TOTAL rows
+
    ```javascript
-   isTotalRow("TOTAL 14/08/26-13/09/26")
+   isTotalRow("TOTAL 14/08/26-13/09/26");
    // Result: true ✅
-   isTotalRow("10/09/26")
+   isTotalRow("10/09/26");
    // Result: false ✅
    ```
 
 5. **inCycle(date, cycle)**: Correctly filters by cycle
    ```javascript
-   inCycle(Date(2026, 8, 10), cycle) // Sep 10 in Aug 14-Sep 13
+   inCycle(Date(2026, 8, 10), cycle); // Sep 10 in Aug 14-Sep 13
    // Result: true ✅
-   inCycle(Date(2026, 8, 14), cycle) // Sep 14 in Aug 14-Sep 13
+   inCycle(Date(2026, 8, 14), cycle); // Sep 14 in Aug 14-Sep 13
    // Result: false ✅
    ```
 
@@ -262,20 +291,20 @@ Cycle: Current (click "Current" button)
 
 ## Test Results Summary
 
-| Test Case | Status | Notes |
-|-----------|--------|-------|
-| Cycle boundaries calculated | ✅ | Aug 14 - Sep 13 |
-| TOTAL rows created | ✅ | At cycle end |
-| TOTAL rows skipped in UI | ✅ | parseRows() filters them |
-| Daily entries parsed | ✅ | 4 entries in current cycle |
-| Next cycle entries parsed | ✅ | 2 entries in next cycle |
-| Summary calculations | ✅ | Revenue: ₹20,100, Procurement: ₹8,200 |
-| Cycle navigation | ✅ | Prev/Current/Next buttons work |
-| Data persistence | ✅ | Data preserved across cycles |
-| Date formatting | ✅ | DD/MM/YY format |
-| Year handling | ✅ | 26 → 2026 |
-| Discrepancy calculation | ✅ | ACCESS/SHOT fields |
-| Inventory totals | ✅ | All 20 categories included |
+| Test Case                   | Status | Notes                                 |
+| --------------------------- | ------ | ------------------------------------- |
+| Cycle boundaries calculated | ✅     | Aug 14 - Sep 13                       |
+| TOTAL rows created          | ✅     | At cycle end                          |
+| TOTAL rows skipped in UI    | ✅     | parseRows() filters them              |
+| Daily entries parsed        | ✅     | 4 entries in current cycle            |
+| Next cycle entries parsed   | ✅     | 2 entries in next cycle               |
+| Summary calculations        | ✅     | Revenue: ₹20,100, Procurement: ₹8,200 |
+| Cycle navigation            | ✅     | Prev/Current/Next buttons work        |
+| Data persistence            | ✅     | Data preserved across cycles          |
+| Date formatting             | ✅     | DD/MM/YY format                       |
+| Year handling               | ✅     | 26 → 2026                             |
+| Discrepancy calculation     | ✅     | ACCESS/SHOT fields                    |
+| Inventory totals            | ✅     | All 20 categories included            |
 
 ---
 
@@ -317,6 +346,7 @@ Cycle: Current (click "Current" button)
 ✅ **All tests passed. Cycle-end behavior is working correctly.**
 
 The app successfully:
+
 - Creates TOTAL rows at cycle boundaries (14th-13th boundaries)
 - Stores them in Google Sheets for audit trail
 - Filters them from the UI (intentional design)

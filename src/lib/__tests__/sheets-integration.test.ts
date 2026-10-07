@@ -30,7 +30,8 @@ describe("Google Sheets Integration Configuration", () => {
 
   it("should have valid API key format", () => {
     // LOVABLE_API_KEY starts with sk_ and is base64-like
-    const lovableKey = "sk_fW1LhqWEk7taMdr8lNtdPBa0OvYJuUk/IWcmEkzYJUW/FxErWQMmp5OTtG86zXqCh6RC8At7z17Qx8SZ7eXoTxR71/f+yhw4kXZORJ59w8RTWRy7apVZiiIB4Uuba/vu7+AN5riUiyd3xYqupc/7MuLMA8ICbmT15fJjhko+/yHHUIjhMAOSOsX+kGPr9qqqQJKjarIi4kDckU7dJsk739WhyiLwVJbbvNrqPODx7rs4q/0N/cqMZo8sGEUWsdk2AAATuw==";
+    const lovableKey =
+      "sk_fW1LhqWEk7taMdr8lNtdPBa0OvYJuUk/IWcmEkzYJUW/FxErWQMmp5OTtG86zXqCh6RC8At7z17Qx8SZ7eXoTxR71/f+yhw4kXZORJ59w8RTWRy7apVZiiIB4Uuba/vu7+AN5riUiyd3xYqupc/7MuLMA8ICbmT15fJjhko+/yHHUIjhMAOSOsX+kGPr9qqqQJKjarIi4kDckU7dJsk739WhyiLwVJbbvNrqPODx7rs4q/0N/cqMZo8sGEUWsdk2AAATuw==";
 
     expect(lovableKey).toMatch(/^sk_/);
     expect(lovableKey.length).toBeGreaterThan(50);
@@ -73,13 +74,7 @@ describe("Google Sheets Integration Configuration", () => {
   it("should have offline capability setup", () => {
     // The app has offline support via IndexedDB
     // These should be the key functions available
-    const offlineFunctions = [
-      "cacheTab",
-      "readCachedTab",
-      "enqueue",
-      "dequeue",
-      "getQueue",
-    ];
+    const offlineFunctions = ["cacheTab", "readCachedTab", "enqueue", "dequeue", "getQueue"];
 
     offlineFunctions.forEach((fn) => {
       expect(fn).toBeDefined();
@@ -156,7 +151,7 @@ describe("Server Functions", () => {
 
   it("should export column management functions", () => {
     const functions = [
-      "addColumn",    // Add new inventory category
+      "addColumn", // Add new inventory category
       "renameColumn", // Rename existing category
       "archiveColumn", // Archive without data loss
       "restoreColumn", // Restore archived column

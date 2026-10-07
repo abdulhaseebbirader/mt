@@ -28,15 +28,15 @@ async function gateway(path, init = {}) {
 
 async function formatTotalRows(spreadsheetId, sheetName) {
   console.log(`\nFormatting TOTAL rows in ${sheetName}...`);
-  
+
   // Read the sheet to find TOTAL rows
   const response = await gateway(`/spreadsheets/${spreadsheetId}/values/${sheetName}!A:Z`, {
     method: "GET",
   });
-  
+
   const rows = response.values || [];
   const totalRowIndices = [];
-  
+
   // Find all rows that start with "TOTAL"
   rows.forEach((row, index) => {
     const dateCell = (row[0] || "").trim().toUpperCase();
@@ -44,19 +44,19 @@ async function formatTotalRows(spreadsheetId, sheetName) {
       totalRowIndices.push(index + 1); // Convert to 1-based sheet row number
     }
   });
-  
+
   console.log(`  Found ${totalRowIndices.length} TOTAL rows`);
-  
+
   if (totalRowIndices.length === 0) {
     console.log(`  No TOTAL rows to format`);
     return;
   }
-  
+
   // Format each TOTAL row with background color and bold text
   for (const rowNum of totalRowIndices) {
     // Create a range for the entire row (A to Z columns)
     const range = `${sheetName}!A${rowNum}:Z${rowNum}`;
-    
+
     // Apply formatting: yellow background, bold, center alignment
     await gateway(`/spreadsheets/${spreadsheetId}:batchUpdate`, {
       method: "POST",
@@ -89,32 +89,36 @@ async function formatTotalRows(spreadsheetId, sheetName) {
         ],
       }),
     });
-    
+
     console.log(`  ✓ Formatted row ${rowNum}`);
   }
 }
 
 async function main() {
-  if (!LOVABLE_API_KEY || !GOOGLE_SHEETS_API_KEY || !AZAD_SPREADSHEET_ID || !ROSHAN_SPREADSHEET_ID) {
+  if (
+    !LOVABLE_API_KEY ||
+    !GOOGLE_SHEETS_API_KEY ||
+    !AZAD_SPREADSHEET_ID ||
+    !ROSHAN_SPREADSHEET_ID
+  ) {
     console.error("Missing environment variables!");
     process.exit(1);
   }
-  
+
   try {
     console.log("=== FORMATTING TOTAL ROWS ===\n");
-    
+
     console.log("AZAD CHOWK:");
     await formatTotalRows(AZAD_SPREADSHEET_ID, "SALES");
     await formatTotalRows(AZAD_SPREADSHEET_ID, "INVENTORY");
-    
+
     console.log("\n\nROSHAN GATE:");
     await formatTotalRows(ROSHAN_SPREADSHEET_ID, "SALES");
     await formatTotalRows(ROSHAN_SPREADSHEET_ID, "INVENTORY");
-    
+
     console.log("\n\n✅ Formatting complete!");
     console.log("\nNote: Formatting applied to existing TOTAL rows.");
     console.log("Future TOTAL rows will also be highlighted automatically.");
-    
   } catch (error) {
     console.error("\n❌ Error:", error.message);
     // Don't fail on formatting errors as it's secondary

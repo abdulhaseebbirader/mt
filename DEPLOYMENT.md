@@ -42,30 +42,38 @@ ROSHAN_SPREADSHEET_ID
 3. Add each variable:
 
 #### 1. LOVABLE_API_KEY
+
 ```
 sk_fW1LhqWEk7taMdr8lNtdPBa0OvYJuUk/IWcmEkzYJUW/FxErWQMmp5OTtG86zXqCh6RC8At7z17Qx8SZ7eXoTxR71/f+yhw4kXZORJ59w8RTWRy7apVZiiIB4Uuba/vu7+AN5riUiyd3xYqupc/7MuLMA8ICbmT15fJjhko+/yHHUIjhMAOSOsX+kGPr9qqqQJKjarIi4kDckU7dJsk739WhyiLwVJbbvNrqPODx7rs4q/0N/cqMZo8sGEUWsdk2AAATuw==
 ```
+
 - **Type**: Secret
 - **Environments**: Production, Preview, Development
 
 #### 2. GOOGLE_SHEETS_API_KEY
+
 ```
 lovc_b383681975b6b140943b44d86839079c
 ```
+
 - **Type**: Secret
 - **Environments**: Production, Preview, Development
 
 #### 3. AZAD_SPREADSHEET_ID
+
 ```
 1F1JAYGpaeCP3ShA9vqbteHL2PX7zAtTwIdSw6-Xut9w
 ```
+
 - **Type**: Config (or Secret)
 - **Environments**: Production, Preview, Development
 
 #### 4. ROSHAN_SPREADSHEET_ID
+
 ```
 13FRAFg1WEEXBzy8KzMsI4s9TCxn2p16TXqH-vS-u4zU
 ```
+
 - **Type**: Config (or Secret)
 - **Environments**: Production, Preview, Development
 
@@ -123,6 +131,7 @@ vercel git connect
 ```
 
 This will:
+
 - Connect the GitHub repository
 - Set up automatic deployments on push
 - Deploy previews for pull requests
@@ -166,6 +175,7 @@ Visit: https://mataam-restaurant-hub.vercel.app
 ## Post-Deployment Tasks
 
 ### ✅ Completed
+
 - [x] App deployed to Vercel
 - [x] TanStack Start framework detected
 - [x] Build configuration optimized
@@ -173,6 +183,7 @@ Visit: https://mataam-restaurant-hub.vercel.app
 - [x] Domain aliases configured
 
 ### ⏳ Next Steps
+
 - [ ] **Add Environment Variables** (Use Vercel Dashboard)
 - [ ] Connect GitHub repository for auto-deployment
 - [ ] Set up custom domain (optional)
@@ -185,21 +196,25 @@ Visit: https://mataam-restaurant-hub.vercel.app
 ## Verification Steps
 
 ### 1. Verify Deployment
+
 ```bash
 vercel status
 ```
 
 ### 2. View Build Logs
+
 ```bash
 vercel logs --follow
 ```
 
 ### 3. Test the Live App
+
 ```bash
 curl https://mataam-restaurant-hub.vercel.app
 ```
 
 ### 4. Inspect Project
+
 ```bash
 vercel projects inspect mataam-restaurant-hub
 ```
@@ -211,6 +226,7 @@ vercel projects inspect mataam-restaurant-hub
 ### App not working after setting env vars?
 
 **Solution**: Redeploy with new environment variables
+
 ```bash
 vercel redeploy --prod --yes
 ```
@@ -218,6 +234,7 @@ vercel redeploy --prod --yes
 ### Build failing?
 
 Check build logs:
+
 ```bash
 vercel logs --follow
 ```
@@ -245,17 +262,20 @@ vercel rollback
 ## Support & Maintenance
 
 ### Redeployment
+
 ```bash
 cd Mataam
 vercel redeploy --prod --yes
 ```
 
 ### View Project Settings
+
 ```bash
 vercel projects inspect mataam-restaurant-hub
 ```
 
 ### Update Environment Variables
+
 ```bash
 vercel env ls  # List all env vars
 ```

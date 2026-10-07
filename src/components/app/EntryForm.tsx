@@ -26,7 +26,15 @@ type Props = {
   targetLabel?: string;
 };
 
-export function EntryForm({ module, fields, lookup, saving, onSave, dateOverride, targetLabel }: Props) {
+export function EntryForm({
+  module,
+  fields,
+  lookup,
+  saving,
+  onSave,
+  dateOverride,
+  targetLabel,
+}: Props) {
   const [iso, setIso] = useState(() => toISODate(new Date()));
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -104,11 +112,16 @@ export function EntryForm({ module, fields, lookup, saving, onSave, dateOverride
         {module === "sales" ? (
           <div className="mt-4 space-y-2 rounded-xl bg-secondary p-3">
             <Line label="TOTAL collection" value={money(rec.total)} strong />
-            <Line label={`${targetLabel || "TARGET"} target`} value={money(num(numeric[targetLabel || "PET POOJA"]))} />
+            <Line
+              label={`${targetLabel || "TARGET"} target`}
+              value={money(num(numeric[targetLabel || "PET POOJA"]))}
+            />
             <Line
               label={rec.discrepancy >= 0 ? "ACCESS (excess)" : "SHOT (short)"}
               value={money(rec.discrepancy >= 0 ? rec.access : rec.shot)}
-              tone={rec.discrepancy === 0 ? undefined : rec.discrepancy > 0 ? "success" : "destructive"}
+              tone={
+                rec.discrepancy === 0 ? undefined : rec.discrepancy > 0 ? "success" : "destructive"
+              }
               strong
             />
           </div>
@@ -143,7 +156,6 @@ function Line({
   strong?: boolean;
   tone?: "success" | "destructive" | undefined;
 }) {
-
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{label}</span>

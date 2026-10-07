@@ -28,27 +28,71 @@ async function gateway<T>(path: string, init?: RequestInit): Promise<T> {
 
 async function updateSalesHeaders() {
   console.log("Updating ROSHAN_SALES headers...");
-  
-  const headers = ["DATE", "CFR", "CASH", "ONLINE", "AFTER 12", "CE", "DISC", "C KOT", "SHORT", "PENDING", "SWIGGY", "ZOMATO", "ACCESS", "TOTAL"];
-  
-  await gateway(`/spreadsheets/${ROSHAN_SPREADSHEET_ID}/values/SALES!A1:N1?valueInputOption=USER_ENTERED`, {
-    method: "PUT",
-    body: JSON.stringify({ values: [headers] }),
-  });
-  
+
+  const headers = [
+    "DATE",
+    "CFR",
+    "CASH",
+    "ONLINE",
+    "AFTER 12",
+    "CE",
+    "DISC",
+    "C KOT",
+    "SHORT",
+    "PENDING",
+    "SWIGGY",
+    "ZOMATO",
+    "ACCESS",
+    "TOTAL",
+  ];
+
+  await gateway(
+    `/spreadsheets/${ROSHAN_SPREADSHEET_ID}/values/SALES!A1:N1?valueInputOption=USER_ENTERED`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ values: [headers] }),
+    },
+  );
+
   console.log("✓ SALES headers updated");
 }
 
 async function updateInventoryHeaders() {
   console.log("Updating ROSHAN_INVENTORY headers...");
-  
-  const headers = ["DATE", "Mutton", "Chicken", "Kirana", "Saud", "Coal", "Gas", "Staff", "Rent", "Ali D", "Campa", "Water", "Bilal MB's", "Fish", "Dairy", "L Bill", "Veg", "Brista", "Jar", "Deposite", "Tanker", "TOTAL"];
-  
-  await gateway(`/spreadsheets/${ROSHAN_SPREADSHEET_ID}/values/INVENTORY!A1:V1?valueInputOption=USER_ENTERED`, {
-    method: "PUT",
-    body: JSON.stringify({ values: [headers] }),
-  });
-  
+
+  const headers = [
+    "DATE",
+    "Mutton",
+    "Chicken",
+    "Kirana",
+    "Saud",
+    "Coal",
+    "Gas",
+    "Staff",
+    "Rent",
+    "Ali D",
+    "Campa",
+    "Water",
+    "Bilal MB's",
+    "Fish",
+    "Dairy",
+    "L Bill",
+    "Veg",
+    "Brista",
+    "Jar",
+    "Deposite",
+    "Tanker",
+    "TOTAL",
+  ];
+
+  await gateway(
+    `/spreadsheets/${ROSHAN_SPREADSHEET_ID}/values/INVENTORY!A1:V1?valueInputOption=USER_ENTERED`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ values: [headers] }),
+    },
+  );
+
   console.log("✓ INVENTORY headers updated");
 }
 
@@ -57,7 +101,7 @@ async function main() {
     console.error("Missing environment variables!");
     process.exit(1);
   }
-  
+
   try {
     console.log("Syncing Roshan Gate sheets...\n");
     await updateSalesHeaders();

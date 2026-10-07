@@ -28,9 +28,9 @@ Top Navigation: Persistent branch switcher (`Azad Chowk` | `Roshan Gate`) and mo
 
 ### 2. Module 1: Daily Sales & Closing Reconciliation
 
-* Monthly Cycle Rule: Accounting cycles run strictly from the 14th of each month to the 13th of the subsequent month (e.g., 14 April to 13 May). When the cycle ends on the 13th night or 14th morning, auto-insert a summary total row summing all numeric columns before creating new date rows for the next cycle.
+- Monthly Cycle Rule: Accounting cycles run strictly from the 14th of each month to the 13th of the subsequent month (e.g., 14 April to 13 May). When the cycle ends on the 13th night or 14th morning, auto-insert a summary total row summing all numeric columns before creating new date rows for the next cycle.
 
-* Standard Schema:
+- Standard Schema:
 
   - Date (DD/MM/YY)
 
@@ -58,7 +58,7 @@ Top Navigation: Persistent branch switcher (`Azad Chowk` | `Roshan Gate`) and mo
 
   - INVENTORY (Daily stock/procurement link)
 
-* Reconciliation Arithmetic:
+- Reconciliation Arithmetic:
 
   - TOTAL = CASH + ONLINE + UPI_AFTER_12 + C_EXPENSE + DISC
 
@@ -74,19 +74,19 @@ Top Navigation: Persistent branch switcher (`Azad Chowk` | `Roshan Gate`) and mo
 
 ### 3. Module 2: Daily Raw Material & Expense Register (Inventory)
 
-* Schema Structure (Based on Azad Chowk Register):
+- Schema Structure (Based on Azad Chowk Register):
 
   - Date (Col A)
 
   - Dynamic Expense Columns: Mutton, Chicken, Kirana (Groceries), Saud, Coal, Gas, Staff Wages, Rent, Ali D, Compa, Water, Bilal MB's, Fish, Dairy, L Bill (Electricity Bill), Veg, Brista (Fried Onions), Jar, Egg, etc.
 
-* Dynamic Column Management:
+- Dynamic Column Management:
 
   - The UI must dynamically read and render active column headers from the sheet.
 
   - Settings Modal: Allow the owner to Add a new category/column, Rename an existing column header, or Delete/Archive a column without corrupting historical row records.
 
-* Fast Data Entry Grid:
+- Fast Data Entry Grid:
 
   - Mobile-optimized numerical keypad / fast-input form where user selects Date (defaults to today) and logs amounts across active procurement categories.
 
@@ -98,23 +98,23 @@ Top Navigation: Persistent branch switcher (`Azad Chowk` | `Roshan Gate`) and mo
 
 ### 4. Core Features & UX
 
-* Unified Dashboard:
+- Unified Dashboard:
 
   - Quick summary cards for the selected branch (Current Cycle Revenue vs. Current Cycle Inventory Cost).
 
   - Net operational cash flow indicator (`Cycle Revenue - Cycle Procurement/Expenses`).
 
-* History & Inline Edit:
+- History & Inline Edit:
 
   - Searchable, filterable table view showing entries for the current active cycle.
 
   - Click any past date entry to edit values or correct typos, syncing changes directly to the respective Google Sheet cell.
 
-* Offline Resilience:
+- Offline Resilience:
 
   - Local caching via IndexedDB/localStorage so entries can be logged during internet dropouts and auto-synced with Google Sheets once reconnected.
 
-* Security & State:
+- Security & State:
 
   - Lightweight single-admin access (clean state management, optional local PIN lock for counter tablet security).
 
@@ -122,15 +122,15 @@ Top Navigation: Persistent branch switcher (`Azad Chowk` | `Roshan Gate`) and mo
 
 ### 5. Tech Stack & Vercel Deployment Configuration
 
-* Framework: Next.js (App Router) with TypeScript, Tailwind CSS, Lucide React icons, and standard mobile touch UI components.
+- Framework: Next.js (App Router) with TypeScript, Tailwind CSS, Lucide React icons, and standard mobile touch UI components.
 
-* Backend & Google Sheets Integration:
+- Backend & Google Sheets Integration:
 
   - Use Next.js Server Actions / API routes (`/api/sync-sheet`) with the official `googleapis` package (Google Service Account) or a secure Google Apps Script Web App endpoint.
 
   - Never expose API credentials or service account private keys to the client browser.
 
-* Vercel Optimization:
+- Vercel Optimization:
 
   - Include a production-ready `vercel.json` with proper cache-control headers for Service Workers, PWA manifest, and static assets.
 
@@ -138,11 +138,11 @@ Top Navigation: Persistent branch switcher (`Azad Chowk` | `Roshan Gate`) and mo
 
   - Ensure client-side SPA routing works properly on full page reloads.
 
-* PWA Configuration:
+- PWA Configuration:
 
   - Standalone web app manifest (`manifest.json`), service worker for offline asset caching, and responsive high-res icons for iOS/Android home screens.
 
-* Output Deliverables:
+- Output Deliverables:
 
   - Full source code structure.
 

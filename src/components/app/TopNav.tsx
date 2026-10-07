@@ -69,9 +69,7 @@ export function TopNav({
               onClick={() => onBranch(b.id)}
               className={cn(
                 "flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold transition-all",
-                branch === b.id
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground",
+                branch === b.id ? "bg-card text-foreground shadow-sm" : "text-muted-foreground",
               )}
             >
               <Store className="h-4 w-4" />

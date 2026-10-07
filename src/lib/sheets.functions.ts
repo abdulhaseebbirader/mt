@@ -11,23 +11,12 @@ import {
   ARCHIVE_PREFIX,
   type SheetData,
 } from "./domain";
-import {
-  appendRow,
-  colLetter,
-  getValues,
-  insertColumn,
-  updateRange,
-} from "./sheets.server";
+import { appendRow, colLetter, getValues, insertColumn, updateRange } from "./sheets.server";
 
-const tabSchema = z.enum([
-  "AZAD_SALES",
-  "AZAD_INVENTORY",
-  "ROSHAN_SALES",
-  "ROSHAN_INVENTORY",
-]);
+const tabSchema = z.enum(["AZAD_SALES", "AZAD_INVENTORY", "ROSHAN_SALES", "ROSHAN_INVENTORY"]);
 
 export const loadTab = createServerFn({ method: "GET" })
-  .inputValidator((d: { tab: string }) => ({ tab: tabSchema.parse(d.tab) }))
+  .validator((d: { tab: string }) => ({ tab: tabSchema.parse(d.tab) }))
   .handler(async ({ data }): Promise<SheetData> => {
     const values = await getValues(data.tab);
     const headers = (values[0] ?? []).map((h) => h.trim());
@@ -63,7 +52,7 @@ function buildRow(headers: string[], dateText: string, values: Record<string, nu
 }
 
 export const saveEntry = createServerFn({ method: "POST" })
-  .inputValidator((d: { tab: string; dateText: string; values: Record<string, number> }) =>
+  .validator((d: { tab: string; dateText: string; values: Record<string, number> }) =>
     z
       .object({
         tab: tabSchema,
@@ -81,9 +70,7 @@ export const saveEntry = createServerFn({ method: "POST" })
     const lastCol = colLetter(headers.length - 1);
 
     // Existing row for this date -> in-place update.
-    const existingIndex = raw.findIndex(
-      (r, i) => i > 0 && (r[0] ?? "").trim() === data.dateText,
-    );
+    const existingIndex = raw.findIndex((r, i) => i > 0 && (r[0] ?? "").trim() === data.dateText);
     if (existingIndex > 0) {
       const rowNumber = existingIndex + 1;
       await updateRange(data.tab, `A${rowNumber}:${lastCol}${rowNumber}`, [rowValues]);
@@ -108,14 +95,15 @@ export const saveEntry = createServerFn({ method: "POST" })
 
     if (!lastCellIsTotal && lastDataCycleKey && lastDataCycleKey !== newCycle.key) {
       // Add empty separator row
-      await appendRow(data.tab, headers.map(() => ""));
-      
-      const prevCycleRows = raw
-        .slice(1)
-        .filter((r) => {
-          const d = fromDDMMYY((r[0] ?? "").trim());
-          return d ? cycleFor(d).key === lastDataCycleKey : false;
-        });
+      await appendRow(
+        data.tab,
+        headers.map(() => ""),
+      );
+
+      const prevCycleRows = raw.slice(1).filter((r) => {
+        const d = fromDDMMYY((r[0] ?? "").trim());
+        return d ? cycleFor(d).key === lastDataCycleKey : false;
+      });
       const totals = headers.map((h, ci) => {
         if (ci === 0) {
           const anyDate = fromDDMMYY((prevCycleRows[0]?.[0] ?? "").trim());
@@ -125,9 +113,12 @@ export const saveEntry = createServerFn({ method: "POST" })
         return prevCycleRows.reduce((s, r) => s + num(r[ci]), 0);
       });
       await appendRow(data.tab, totals);
-      
+
       // Add empty separator row
-      await appendRow(data.tab, headers.map(() => ""));
+      await appendRow(
+        data.tab,
+        headers.map(() => ""),
+      );
     }
 
     await appendRow(data.tab, rowValues);
@@ -139,7 +130,7 @@ export const saveEntry = createServerFn({ method: "POST" })
 const invTab = z.enum(["AZAD_INVENTORY", "ROSHAN_INVENTORY"]);
 
 export const addColumn = createServerFn({ method: "POST" })
-  .inputValidator((d: { tab: string; name: string }) =>
+  .validator((d: { tab: string; name: string }) =>
     z.object({ tab: invTab, name: z.string().trim().min(1).max(40) }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -156,9 +147,13 @@ export const addColumn = createServerFn({ method: "POST" })
   });
 
 export const renameColumn = createServerFn({ method: "POST" })
-  .inputValidator((d: { tab: string; index: number; name: string }) =>
+  .validator((d: { tab: string; index: number; name: string }) =>
     z
-      .object({ tab: invTab, index: z.number().int().min(1), name: z.string().trim().min(1).max(40) })
+      .object({
+        tab: invTab,
+        index: z.number().int().min(1),
+        name: z.string().trim().min(1).max(40),
+      })
       .parse(d),
   )
   .handler(async ({ data }) => {
@@ -168,7 +163,7 @@ export const renameColumn = createServerFn({ method: "POST" })
 
 /** Archive keeps historical values intact; the UI simply stops showing the column. */
 export const archiveColumn = createServerFn({ method: "POST" })
-  .inputValidator((d: { tab: string; index: number }) =>
+  .validator((d: { tab: string; index: number }) =>
     z.object({ tab: invTab, index: z.number().int().min(1) }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -177,14 +172,12 @@ export const archiveColumn = createServerFn({ method: "POST" })
     const current = headers[data.index] ?? "";
     if (!current || current === "TOTAL") throw new Error("This column cannot be archived");
     if (current.startsWith(ARCHIVE_PREFIX)) return { ok: true };
-    await updateRange(data.tab, `${colLetter(data.index)}1`, [
-      [`${ARCHIVE_PREFIX}${current}`],
-    ]);
+    await updateRange(data.tab, `${colLetter(data.index)}1`, [[`${ARCHIVE_PREFIX}${current}`]]);
     return { ok: true };
   });
 
 export const restoreColumn = createServerFn({ method: "POST" })
-  .inputValidator((d: { tab: string; index: number }) =>
+  .validator((d: { tab: string; index: number }) =>
     z.object({ tab: invTab, index: z.number().int().min(1) }).parse(d),
   )
   .handler(async ({ data }) => {

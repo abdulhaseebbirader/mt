@@ -72,7 +72,10 @@ function Hub() {
   const cycle = useMemo(() => shiftCycle(cycleFor(new Date()), cycleOffset), [cycleOffset]);
 
   const salesRows = useMemo(() => (sales.data ? parseRows(sales.data) : []), [sales.data]);
-  const invRows = useMemo(() => (inventory.data ? parseRows(inventory.data) : []), [inventory.data]);
+  const invRows = useMemo(
+    () => (inventory.data ? parseRows(inventory.data) : []),
+    [inventory.data],
+  );
 
   const salesCycleRows = salesRows.filter((r) => inCycle(r.date, cycle));
   const invCycleRows = invRows.filter((r) => inCycle(r.date, cycle));
@@ -85,9 +88,7 @@ function Hub() {
 
   const inventoryFields = useMemo(
     () =>
-      (inventory.data?.headers ?? [])
-        .slice(1)
-        .filter((h) => h && h !== "TOTAL" && !isArchived(h)),
+      (inventory.data?.headers ?? []).slice(1).filter((h) => h && h !== "TOTAL" && !isArchived(h)),
     [inventory.data],
   );
 
@@ -127,9 +128,7 @@ function Hub() {
         <div className="flex items-center justify-between gap-2">
           <div className="flex gap-2">
             <CycleButton onClick={() => setCycleOffset((o) => o - 1)} label="‹ Prev" />
-            {cycleOffset !== 0 && (
-              <CycleButton onClick={() => setCycleOffset(0)} label="Current" />
-            )}
+            {cycleOffset !== 0 && <CycleButton onClick={() => setCycleOffset(0)} label="Current" />}
             <CycleButton
               onClick={() => setCycleOffset((o) => Math.min(0, o + 1))}
               label="Next ›"
