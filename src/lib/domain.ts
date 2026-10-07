@@ -232,13 +232,18 @@ export function fromISODate(s: string): Date {
 
 export type Cycle = { start: Date; end: Date; label: string; key: string };
 
-/** Accounting cycle runs from the 14th to the 13th of the next month. */
-export function cycleFor(d: Date): Cycle {
+/** Accounting cycle: Azad runs 14th→13th; Roshan runs calendar months (1st→last day). */
+export function cycleFor(d: Date, branch: BranchId = "azad"): Cycle {
   const start =
-    d.getDate() >= 14
-      ? new Date(d.getFullYear(), d.getMonth(), 14)
-      : new Date(d.getFullYear(), d.getMonth() - 1, 14);
-  const end = new Date(start.getFullYear(), start.getMonth() + 1, 13);
+    branch === "roshan"
+      ? new Date(d.getFullYear(), d.getMonth(), 1)
+      : d.getDate() >= 14
+        ? new Date(d.getFullYear(), d.getMonth(), 14)
+        : new Date(d.getFullYear(), d.getMonth() - 1, 14);
+  const end =
+    branch === "roshan"
+      ? new Date(start.getFullYear(), start.getMonth() + 1, 0)
+      : new Date(start.getFullYear(), start.getMonth() + 1, 13);
   return {
     start,
     end,
@@ -247,8 +252,11 @@ export function cycleFor(d: Date): Cycle {
   };
 }
 
-export function shiftCycle(c: Cycle, months: number): Cycle {
-  return cycleFor(new Date(c.start.getFullYear(), c.start.getMonth() + months, 14));
+export function shiftCycle(c: Cycle, months: number, branch: BranchId = "azad"): Cycle {
+  return cycleFor(
+    new Date(c.start.getFullYear(), c.start.getMonth() + months, c.start.getDate()),
+    branch,
+  );
 }
 
 export function inCycle(d: Date, c: Cycle) {

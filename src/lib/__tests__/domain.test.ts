@@ -134,6 +134,25 @@ describe("domain", () => {
       expect(inCycle(dateOutside, cycle)).toBe(false);
     });
 
+    it("should use calendar months for Roshan", () => {
+      const date = new Date(2025, 8, 10); // Sept 10
+      const cycle = cycleFor(date, "roshan");
+      expect(cycle.start.getDate()).toBe(1);
+      expect(cycle.start.getMonth()).toBe(8);
+      expect(cycle.end.getDate()).toBe(30); // last day of Sept
+      expect(cycle.end.getMonth()).toBe(8);
+
+      const jan31 = cycleFor(new Date(2025, 0, 31), "roshan");
+      expect(jan31.end.getDate()).toBe(31);
+      const feb = cycleFor(new Date(2025, 1, 5), "roshan");
+      expect(feb.end.getDate()).toBe(28);
+
+      const shifted = shiftCycle(cycle, 1, "roshan");
+      expect(shifted.start.getDate()).toBe(1);
+      expect(shifted.start.getMonth()).toBe(9);
+      expect(shifted.end.getDate()).toBe(31);
+    });
+
     it("should generate cycle labels", () => {
       const date = new Date(2025, 8, 15);
       const cycle = cycleFor(date);

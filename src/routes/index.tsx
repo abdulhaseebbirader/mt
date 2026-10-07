@@ -69,7 +69,10 @@ function Hub() {
   const active = module === "sales" ? sales : inventory;
   const save = useSaveEntry(activeTab);
 
-  const cycle = useMemo(() => shiftCycle(cycleFor(new Date()), cycleOffset), [cycleOffset]);
+  const cycle = useMemo(
+    () => shiftCycle(cycleFor(new Date(), branch), cycleOffset, branch),
+    [cycleOffset, branch],
+  );
 
   const salesRows = useMemo(() => (sales.data ? parseRows(sales.data) : []), [sales.data]);
   const invRows = useMemo(

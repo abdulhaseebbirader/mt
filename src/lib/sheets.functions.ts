@@ -78,7 +78,8 @@ export const saveEntry = createServerFn({ method: "POST" })
     }
 
     // New date: seal the previous cycle with a summary row when the cycle rolls over.
-    const newCycle = cycleFor(fromDDMMYY(data.dateText)!);
+    const branch = data.tab.startsWith("ROSHAN") ? "roshan" : "azad";
+    const newCycle = cycleFor(fromDDMMYY(data.dateText)!, branch);
     let lastDataCycleKey: string | null = null;
     let lastCellIsTotal = false;
     for (let i = raw.length - 1; i >= 1; i--) {
@@ -89,7 +90,7 @@ export const saveEntry = createServerFn({ method: "POST" })
         break;
       }
       const d = fromDDMMYY(cell);
-      if (d) lastDataCycleKey = cycleFor(d).key;
+      if (d) lastDataCycleKey = cycleFor(d, branch).key;
       break;
     }
 
@@ -102,12 +103,12 @@ export const saveEntry = createServerFn({ method: "POST" })
 
       const prevCycleRows = raw.slice(1).filter((r) => {
         const d = fromDDMMYY((r[0] ?? "").trim());
-        return d ? cycleFor(d).key === lastDataCycleKey : false;
+        return d ? cycleFor(d, branch).key === lastDataCycleKey : false;
       });
       const totals = headers.map((h, ci) => {
         if (ci === 0) {
           const anyDate = fromDDMMYY((prevCycleRows[0]?.[0] ?? "").trim());
-          return anyDate ? totalRowLabel(cycleFor(anyDate)) : "TOTAL";
+          return anyDate ? totalRowLabel(cycleFor(anyDate, branch)) : "TOTAL";
         }
         void h;
         return prevCycleRows.reduce((s, r) => s + num(r[ci]), 0);
