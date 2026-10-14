@@ -12,7 +12,14 @@ import {
   ARCHIVE_PREFIX,
   type SheetData,
 } from "./domain";
-import { colLetter, getValues, insertColumn, insertRows, updateRange } from "./sheets.server";
+import {
+  colLetter,
+  formatRow,
+  getValues,
+  insertColumn,
+  insertRows,
+  updateRange,
+} from "./sheets.server";
 
 const tabSchema = z.enum(["AZAD_SALES", "AZAD_INVENTORY", "ROSHAN_SALES", "ROSHAN_INVENTORY"]);
 
@@ -115,6 +122,10 @@ export const saveEntry = createServerFn({ method: "POST" })
       await insertRows(data.tab, raw.length, 4);
       const totalRowNumber = raw.length + 2;
       await updateRange(data.tab, `A${totalRowNumber}:${lastCol}${totalRowNumber}`, [totals]);
+      await formatRow(data.tab, totalRowNumber - 1, 0, headers.length, {
+        bold: true,
+        backgroundColor: { red: 1, green: 1, blue: 0.6 },
+      });
       const entryRowNumber = raw.length + 4;
       await updateRange(data.tab, `A${entryRowNumber}:${lastCol}${entryRowNumber}`, [rowValues]);
       return { mode: "appended" as const, rowNumber: entryRowNumber };

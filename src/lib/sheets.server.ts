@@ -88,6 +88,42 @@ export async function getSheetIdByTitle(tabKey: string): Promise<number> {
   return found.properties.sheetId;
 }
 
+export async function formatRow(
+  tabKey: string,
+  rowIndex0: number,
+  startCol0: number,
+  endCol0: number,
+  format: { bold?: boolean; backgroundColor?: { red: number; green: number; blue: number } },
+) {
+  const { spreadsheetId } = resolveTab(tabKey);
+  const sheetId = await getSheetIdByTitle(tabKey);
+  return gateway(`/spreadsheets/${spreadsheetId}:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      requests: [
+        {
+          repeatCell: {
+            range: {
+              sheetId,
+              startRowIndex: rowIndex0,
+              endRowIndex: rowIndex0 + 1,
+              startColumnIndex: startCol0,
+              endColumnIndex: endCol0,
+            },
+            cell: {
+              userEnteredFormat: {
+                textFormat: { bold: format.bold ?? false },
+                backgroundColor: format.backgroundColor,
+              },
+            },
+            fields: "userEnteredFormat(textFormat.bold,backgroundColor)",
+          },
+        },
+      ],
+    }),
+  });
+}
+
 export async function insertRows(tabKey: string, startIndex0: number, count: number) {
   const { spreadsheetId } = resolveTab(tabKey);
   const sheetId = await getSheetIdByTitle(tabKey);
