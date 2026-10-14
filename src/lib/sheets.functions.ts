@@ -12,14 +12,7 @@ import {
   ARCHIVE_PREFIX,
   type SheetData,
 } from "./domain";
-import {
-  appendRow,
-  colLetter,
-  getValues,
-  insertColumn,
-  insertRows,
-  updateRange,
-} from "./sheets.server";
+import { colLetter, getValues, insertColumn, insertRows, updateRange } from "./sheets.server";
 
 const tabSchema = z.enum(["AZAD_SALES", "AZAD_INVENTORY", "ROSHAN_SALES", "ROSHAN_INVENTORY"]);
 
@@ -127,8 +120,11 @@ export const saveEntry = createServerFn({ method: "POST" })
       return { mode: "appended" as const, rowNumber: entryRowNumber };
     }
 
-    await appendRow(data.tab, rowValues);
-    return { mode: "appended" as const };
+    // values.append stops at blank separator rows, so write the new entry
+    // explicitly below the last non-empty row.
+    const entryRowNumber = raw.length + 1;
+    await updateRange(data.tab, `A${entryRowNumber}:${lastCol}${entryRowNumber}`, [rowValues]);
+    return { mode: "appended" as const, rowNumber: entryRowNumber };
   });
 
 /* --------------------- dynamic inventory column admin -------------------- */
