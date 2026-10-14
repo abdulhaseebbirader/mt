@@ -12,7 +12,14 @@ import {
   ARCHIVE_PREFIX,
   type SheetData,
 } from "./domain";
-import { appendRow, colLetter, getValues, insertColumn, updateRange } from "./sheets.server";
+import {
+  appendRow,
+  colLetter,
+  getValues,
+  insertColumn,
+  insertRows,
+  updateRange,
+} from "./sheets.server";
 
 const tabSchema = z.enum(["AZAD_SALES", "AZAD_INVENTORY", "ROSHAN_SALES", "ROSHAN_INVENTORY"]);
 
@@ -96,12 +103,6 @@ export const saveEntry = createServerFn({ method: "POST" })
     }
 
     if (!lastCellIsTotal && lastDataCycleKey && lastDataCycleKey !== newCycle.key) {
-      // Add empty separator row
-      await appendRow(
-        data.tab,
-        headers.map(() => ""),
-      );
-
       const prevCycleRows = raw.slice(1).filter((r) => {
         const d = fromDDMMYY((r[0] ?? "").trim());
         return d ? cycleFor(d, branch).key === lastDataCycleKey : false;
@@ -114,13 +115,16 @@ export const saveEntry = createServerFn({ method: "POST" })
         void h;
         return prevCycleRows.reduce((s, r) => s + num(r[ci]), 0);
       });
-      await appendRow(data.tab, totals);
 
-      // Add empty separator row
-      await appendRow(
-        data.tab,
-        headers.map(() => ""),
-      );
+      // values.append cannot write an empty row, so insert real blank rows
+      // then write the TOTAL row and the new entry at fixed positions:
+      // [blank] [TOTAL] [blank] [entry]
+      await insertRows(data.tab, raw.length, 4);
+      const totalRowNumber = raw.length + 2;
+      await updateRange(data.tab, `A${totalRowNumber}:${lastCol}${totalRowNumber}`, [totals]);
+      const entryRowNumber = raw.length + 4;
+      await updateRange(data.tab, `A${entryRowNumber}:${lastCol}${entryRowNumber}`, [rowValues]);
+      return { mode: "appended" as const, rowNumber: entryRowNumber };
     }
 
     await appendRow(data.tab, rowValues);

@@ -88,6 +88,29 @@ export async function getSheetIdByTitle(tabKey: string): Promise<number> {
   return found.properties.sheetId;
 }
 
+export async function insertRows(tabKey: string, startIndex0: number, count: number) {
+  const { spreadsheetId } = resolveTab(tabKey);
+  const sheetId = await getSheetIdByTitle(tabKey);
+  return gateway(`/spreadsheets/${spreadsheetId}:batchUpdate`, {
+    method: "POST",
+    body: JSON.stringify({
+      requests: [
+        {
+          insertDimension: {
+            range: {
+              sheetId,
+              dimension: "ROWS",
+              startIndex: startIndex0,
+              endIndex: startIndex0 + count,
+            },
+            inheritFromBefore: false,
+          },
+        },
+      ],
+    }),
+  });
+}
+
 export async function insertColumn(tabKey: string, atIndex0: number) {
   const { spreadsheetId } = resolveTab(tabKey);
   const sheetId = await getSheetIdByTitle(tabKey);
